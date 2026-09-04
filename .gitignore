@@ -1,0 +1,7 @@
+.vscode/
+.venv
+
+# config/
+client_secret.json
+.env
+__pycache__/
