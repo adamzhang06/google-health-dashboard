@@ -10,5 +10,9 @@ google-auth-httplib2
 # HTTP Requests
 requests
 
+# Web Framework
 fastapi
 uvicorn
+
+# Database
+psycopg[binary]
