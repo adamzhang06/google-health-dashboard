@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 import google_auth_oauthlib.flow
 
@@ -7,20 +7,27 @@ from config.settings import (
     GOOGLE_CLIENT_SECRETS_FILE as CLIENT_SECRETS_FILE,
 )
 
-app = FastAPI()
+router = APIRouter()
 
 SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/googlehealth.sleep.readonly'
+    'https://www.googleapis.com/auth/googlehealth.sleep.readonly',
+    'https://www.googleapis.com/auth/googlehealth.sleep.writeonly',
+    'https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly',
+    'https://www.googleapis.com/auth/googlehealth.activity_and_fitness.writeonly',
+    'https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly',
+    'https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.writeonly',
+    'https://www.googleapis.com/auth/googlehealth.nutrition.readonly',
+    'https://www.googleapis.com/auth/googlehealth.nutrition.writeonly'
 ]
 
 # Each request builds its own Flow object, so the PKCE code_verifier generated
 # in /login has to be handed off to /oauth2callback explicitly, keyed by state.
 _code_verifiers: dict[str, str | None] = {}
 
-@app.get("/login")
+@router.get("/login")
 def login():
     # 1. Initialize the flow
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
@@ -40,7 +47,7 @@ def login():
     # 3. Redirect the tester's browser to Google
     return RedirectResponse(url=authorization_url)
 
-@app.get("/oauth2callback")
+@router.get("/oauth2callback")
 def oauth2callback(request: Request):
     state = request.query_params.get("state")
     if state is None:
@@ -71,4 +78,5 @@ def oauth2callback(request: Request):
     # print(access_token, refresh_token)
     
     
-    return {"message": "Tokens successfully acquired and saved!"}
+    # Hand the browser back to the landing page so the user sees the result.
+    return RedirectResponse(url="/?connected=1")
